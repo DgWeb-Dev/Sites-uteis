@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sífilis: Reconhecer, Testar e Tratar</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --slide-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #e11d48;
+            --primary-light: #fb7185;
+            --accent: #38bdf8;
+            --accent-green: #10b981;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            font-family: 'Outfit', sans-serif;
+            color: var(--text-main);
+            user-select: none;
+            touch-action: pan-y; 
+            cursor: default;
+        }
+
+        body.hide-cursor { cursor: none; }
+
+        /* --- INTRO CINEMATOGRÁFICA --- */
+        #intro-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: radial-gradient(circle at center, #1e293b 0%, #000000 100%);
+            display: flex; align-items: center; justify-content: center; flex-direction: column;
+            z-index: 9999;
+            transition: opacity 0.8s ease;
+        }
+
+        .intro-text {
+            position: absolute;
+            font-size: 4rem;
+            font-weight: 900;
+            text-align: center;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            padding: 0 20px;
+            width: 100%;
+        }
+
+        .intro-text.active { opacity: 1; transform: scale(1); }
+        #intro-1 { color: #fff; text-shadow: 0 0 20px var(--primary), 0 0 40px var(--primary); }
+        #intro-2 { color: #fff; text-shadow: 0 0 20px var(--accent), 0 0 40px var(--accent); line-height: 1.1; }
+        #intro-3 { color: #fff; font-family: 'Space Grotesk', sans-serif; text-shadow: 0 0 20px var(--accent-green), 0 0 40px var(--accent-green); }
+
+        #skip-intro {
+            position: absolute; bottom: 30px; right: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff; padding: 10px 20px; border-radius: 50px;
+            cursor: pointer; font-family: 'Outfit', sans-serif; font-size: 1rem;
+            backdrop-filter: blur(10px); transition: 0.3s; z-index: 10000;
+        }
+        #skip-intro:hover { background: rgba(255, 255, 255, 0.2); }
+
+        /* --- APRESENTAÇÃO --- */
+        .presentation {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            padding: 4rem 8rem;
+            display: flex; flex-direction: column; justify-content: center;
+            opacity: 0; 
+            pointer-events: none;
+            transition: opacity 0.6s ease;
+            background: radial-gradient(circle at top right, #1e293b 0%, #0f172a 100%);
+            z-index: 1;
+            overflow-y: auto;
+        }
+
+        .slide.active {
+            opacity: 1;
+            pointer-events: all;
+            z-index: 10;
+        }
+
+        /* Badge do Apresentador */
+        .presenter-badge {
+            position: absolute;
+            top: 2rem; right: 2rem;
+            background: rgba(225, 29, 72, 0.15);
+            border: 1px solid var(--primary);
+            color: var(--primary-light);
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
+            font-size: 1rem; font-weight: 600;
+            z-index: 50;
+            display: flex; align-items: center; gap: 0.5rem;
+            box-shadow: 0 0 15px rgba(225, 29, 72, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        /* Botão de Tela Cheia */
+        #fullscreen-btn {
+            position: absolute;
+            top: 2rem; left: 2rem;
+            background: rgba(56, 189, 248, 0.15);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
+            font-size: 1rem; font-weight: 600;
+            cursor: pointer;
+            z-index: 999;
+            display: flex; align-items: center; gap: 0.5rem;
+            backdrop-filter: blur(10px);
+            transition: 0.3s;
+        }
+        #fullscreen-btn:hover { background: var(--accent); color: var(--bg-color); }
+
+        /* Navegação */
+        .nav-controls {
+            position: absolute; bottom: 2rem; right: 2rem;
+            display: flex; gap: 1.5rem; z-index: 100;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid var(--accent);
+            color: var(--text-main);
+            width: 4rem; height: 4rem;
+            border-radius: 50%; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
+        }
+
+        .nav-btn:active { background: var(--accent); transform: scale(0.9); }
+        .nav-btn.disabled { opacity: 0.3; pointer-events: none; }
+
+        .progress-bar {
+            position: absolute; bottom: 0; left: 0; height: 6px;
+            background: var(--primary); transition: width 0.4s ease; z-index: 100;
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        .slide-counter {
+            position: absolute; bottom: 2.5rem; left: 2rem;
+            font-size: 1.2rem; color: var(--text-muted);
+            font-family: 'Space Grotesk', sans-serif; z-index: 100;
+            background: rgba(0,0,0,0.5); padding: 0.5rem 1rem;
+            border-radius: 1rem; backdrop-filter: blur(5px);
+        }
+
+        /* Indicador de Swipe */
+        .swipe-hint {
+            position: absolute; bottom: 6rem; left: 50%; transform: translateX(-50%);
+            color: var(--accent); font-size: 1rem; display: none;
+            animation: bounce 2s infinite; z-index: 100; pointer-events: none;
+            background: rgba(0,0,0,0.6); padding: 0.5rem 1rem; border-radius: 20px;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translate(-50%, 0); }
+            50% { transform: translate(-50%, -10px); }
+        }
+
+        /* Tipografia */
+        h1 { font-size: 4rem; font-weight: 800; line-height: 1.1; margin-bottom: 1rem; }
+        h2 { font-size: 2.5rem; font-weight: 600; margin-bottom: 2rem; color: var(--primary-light); display: flex; align-items: center; gap: 1rem; }
+        h3 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; }
+        p, li { font-size: 1.25rem; color: var(--text-muted); line-height: 1.6; }
+        strong { color: var(--text-main); }
+
+        /* --- ESTILO DAS IMAGENS REAIS --- */
+        .clinical-image {
+            border-radius: 1rem;
+            border: 2px solid var(--border-color);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+            max-height: 250px;
+            margin-bottom: 1rem;
+            transition: transform 0.3s;
+        }
+        .clinical-image:hover {
+            transform: scale(1.02);
+            border-color: var(--accent);
+        }
+        .img-caption {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-align: center;
+            margin-top: -0.5rem;
+            margin-bottom: 1rem;
+            font-style: italic;
+        }
+        .img-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* --- ANIMAÇÕES --- */
+        .anim { opacity: 0; }
+        
+        .slide.active .anim {
+            animation-duration: 0.8s;
+            animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+            animation-fill-mode: forwards;
+        }
+
+        .slide.active .anim-up { animation-name: animUp; }
+        .slide.active .anim-left { animation-name: animLeft; }
+        .slide.active .anim-right { animation-name: animRight; }
+        .slide.active .anim-scale { animation-name: animScale; }
+
+        @keyframes animUp { 0% { opacity: 0; transform: translateY(30px); } 100% { opacity: 1; transform: translateY(0); } }
+        @keyframes animLeft { 0% { opacity: 0; transform: translateX(-40px); } 100% { opacity: 1; transform: translateX(0); } }
+        @keyframes animRight { 0% { opacity: 0; transform: translateX(40px); } 100% { opacity: 1; transform: translateX(0); } }
+        @keyframes animScale { 0% { opacity: 0; transform: scale(0.9); } 100% { opacity: 1; transform: scale(1); } }
+
+        /* Delays */
+        .delay-1 { animation-delay: 0.1s !important; }
+        .delay-2 { animation-delay: 0.2s !important; }
+        .delay-3 { animation-delay: 0.3s !important; }
+        .delay-4 { animation-delay: 0.4s !important; }
+        .delay-5 { animation-delay: 0.5s !important; }
+        .delay-6 { animation-delay: 0.6s !important; }
+        .delay-7 { animation-delay: 0.7s !important; }
+        .delay-8 { animation-delay: 0.8s !important; }
+
+        /* Layouts Específicos */
+        .slide-1 { align-items: center; text-align: center; }
+        .slide-1 h1 { font-size: 5rem; background: linear-gradient(to right, #fb7185, #38bdf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .slide-1 .subtitle { font-size: 1.8rem; color: var(--text-muted); margin-bottom: 3rem; }
+        .bacteria-icon { font-size: 6rem; color: var(--primary); margin-bottom: 2rem; animation: pulse 2s infinite; }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+        .fact-card { background: var(--card-bg); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 1rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem; }
+        .fact-icon { font-size: 1.5rem; color: var(--accent); }
+        .fact-text h4 { font-size: 1.1rem; color: var(--text-muted); font-weight: 400; margin-bottom: 0.2rem; }
+        .fact-text p { font-size: 1.2rem; color: var(--text-main); font-weight: 600; margin: 0; }
+        .highlight-box { background: rgba(225, 29, 72, 0.1); border-left: 4px solid var(--primary); padding: 1.5rem; border-radius: 0 1rem 1rem 0; margin-top: 2rem; }
+
+        .transmission-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; margin-top: 1rem; }
+        .trans-card { background: var(--card-bg); border: 1px solid var(--border-color); padding: 2.5rem; border-radius: 1rem; position: relative; overflow: hidden; }
+        .trans-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: var(--accent); }
+        .trans-card:nth-child(2)::before { background: var(--primary); }
+        .trans-icon { font-size: 3rem; margin-bottom: 1.5rem; color: var(--accent); }
+        .warning-box { background: rgba(56, 189, 248, 0.1); border: 1px solid var(--accent); padding: 1rem; border-radius: 0.5rem; margin-top: 2rem; display: flex; align-items: center; gap: 1rem; }
+
+        .stage-diagram { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem; }
+        .stage-box { background: var(--card-bg); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 1rem; text-align: center; }
+        .stage-box h3 { color: var(--primary-light); margin-bottom: 0.5rem; }
+        .stage-connector { text-align: center; color: var(--text-muted); font-size: 1.5rem; margin: -1rem 0; z-index: 2; position: relative; }
+
+        .symptom-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2rem; margin-top: 2rem; }
+        .symptom-card { background: var(--card-bg); border: 1px solid var(--border-color); padding: 2rem; border-radius: 1rem; text-align: center; border-top: 4px solid var(--accent-green); }
+        .symptom-card:nth-child(2) { border-top-color: var(--primary); }
+        .symptom-card:nth-child(3) { border-top-color: #fbbf24; }
+        .symptom-icon { font-size: 3rem; margin-bottom: 1rem; color: var(--accent-green); }
+
+        .steps-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem; margin-top: 3rem; }
+        .step-card { background: var(--card-bg); border: 1px solid var(--border-color); padding: 2rem; border-radius: 1rem; position: relative; }
+        .step-number { position: absolute; top: -1.5rem; left: 2rem; width: 3rem; height: 3rem; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 800; }
+        .action-alert { margin-top: 2rem; text-align: center; font-size: 1.2rem; color: var(--primary-light); font-weight: 600; }
+
+        .pillars-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2rem; margin-top: 2rem; }
+        .pillar-card { background: var(--card-bg); border: 1px solid var(--border-color); padding: 2rem; border-radius: 1rem; border-bottom: 4px solid var(--accent); }
+        .danger-alert { background: rgba(225, 29, 72, 0.15); border: 1px solid var(--primary); color: var(--text-main); padding: 1.5rem; border-radius: 1rem; margin-top: 2rem; display: flex; align-items: center; gap: 1rem; }
+
+        .pregnancy-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+        .protocol-table { width: 100%; border-collapse: collapse; background: var(--card-bg); border-radius: 1rem; overflow: hidden; }
+        .protocol-table th, .protocol-table td { padding: 1rem 1.5rem; text-align: left; border-bottom: 1px solid var(--border-color); }
+        .protocol-table th { background: rgba(56, 189, 248, 0.1); color: var(--accent); font-weight: 600; }
+        .official-guideline { background: rgba(16, 185, 129, 0.1); border-left: 4px solid var(--accent-green); padding: 1rem; border-radius: 0 1rem 1rem 0; margin-top: 2rem; }
+
+        .prevention-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem; }
+        .prevention-item { display: flex; align-items: flex-start; gap: 1.5rem; background: var(--card-bg); padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border-color); }
+        .prev-icon { font-size: 2.5rem; color: var(--accent); min-width: 3rem; text-align: center; }
+        .conclusion-text { text-align: center; font-size: 1.3rem; margin-top: 2rem; color: var(--accent-green); font-weight: 600; }
+
+        .myth-truth-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; margin-top: 3rem; }
+        .mt-card { padding: 3rem; border-radius: 1rem; position: relative; overflow: hidden; }
+        .mt-card.myth { background: rgba(225, 29, 72, 0.1); border: 1px solid var(--primary); }
+        .mt-card.truth { background: rgba(16, 185, 129, 0.1); border: 1px solid var(--accent-green); }
+        .mt-badge { position: absolute; top: 1.5rem; right: 1.5rem; font-size: 1rem; font-weight: 800; padding: 0.5rem 1rem; border-radius: 2rem; }
+        .myth .mt-badge { background: var(--primary); color: white; }
+        .truth .mt-badge { background: var(--accent-green); color: white; }
+
+        .action-steps { display: flex; justify-content: center; gap: 4rem; margin-top: 4rem; }
+        .action-step { text-align: center; position: relative; }
+        .action-step::after { content: '\f061'; font-family: 'Font Awesome 6 Free'; font-weight: 900; position: absolute; top: 50%; right: -3rem; color: var(--text-muted); font-size: 1.5rem; }
+        .action-step:last-child::after { display: none; }
+        .action-circle { width: 120px; height: 120px; border-radius: 50%; background: var(--card-bg); border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; font-size: 3rem; color: var(--accent); margin: 0 auto 1.5rem auto; }
+
+        .slide-12 { align-items: center; text-align: center; }
+        .slide-12 h1 { font-size: 3.5rem; margin-bottom: 2rem; }
+        .slide-12 p { font-size: 1.5rem; max-width: 800px; margin-bottom: 3rem; }
+        .final-message { font-size: 2rem; font-weight: 800; color: var(--accent); padding: 2rem; border: 2px solid var(--accent); border-radius: 1rem; display: inline-block; }
+
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
+
+        /* --- NOVO SLIDE 13 (A PEGADINHA DO 10) --- */
+        .slide-13 { align-items: center; text-align: center; justify-content: center; }
+        .slide-13 h1 { font-size: 4.5rem; text-shadow: 0 0 20px rgba(56, 189, 248, 0.5); margin-bottom: 3rem; }
+        
+        .btn-container { display: flex; gap: 4rem; justify-content: center; position: relative; width: 100%; height: 200px; }
+        
+        .btn-yes {
+            background: var(--accent-green);
+            color: #fff;
+            border: none;
+            padding: 1.5rem 4rem;
+            font-size: 2rem;
+            font-weight: 800;
+            border-radius: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 0 30px rgba(16, 185, 129, 0.5);
+            font-family: 'Outfit', sans-serif;
+            z-index: 10;
+        }
+        .btn-yes:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 50px rgba(16, 185, 129, 0.8);
+        }
+
+        .btn-no {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 1.5rem 4rem;
+            font-size: 2rem;
+            font-weight: 800;
+            border-radius: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s, top 0.1s, left 0.1s;
+            font-family: 'Outfit', sans-serif;
+            position: fixed;
+            z-index: 20;
+            box-shadow: 0 0 30px rgba(225, 29, 72, 0.5);
+        }
+
+        .thank-you-box { display: none; text-align: center; }
+        .thank-you-box h1 { font-size: 4rem; color: var(--accent-green); text-shadow: 0 0 20px rgba(16, 185, 129, 0.5); margin-bottom: 2rem; }
+        .thank-you-box p { font-size: 2rem; color: var(--text-main); font-weight: 600; }
+
+        /* --- RESPONSIVIDADE (CELULAR) --- */
+        @media (max-width: 768px) {
+            .slide { padding: 4rem 1.5rem 2rem 1.5rem; justify-content: flex-start; }
+            h1 { font-size: 2.5rem; }
+            h2 { font-size: 1.6rem; margin-bottom: 1.5rem; flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+            h3 { font-size: 1.3rem; }
+            p, li { font-size: 1.1rem; }
+            
+            .presenter-badge { top: 1rem; right: 1rem; font-size: 0.8rem; padding: 0.4rem 0.8rem; }
+            #fullscreen-btn { top: 1rem; left: 1rem; font-size: 0.8rem; padding: 0.4rem 0.8rem; }
+            .intro-text { font-size: 2.5rem; }
+            .slide-1 h1 { font-size: 3rem; }
+            .slide-1 .subtitle { font-size: 1.2rem; margin-bottom: 2rem; }
+            
+            .grid-2, .transmission-grid, .pregnancy-layout, .prevention-grid, .myth-truth-grid, .stage-diagram { grid-template-columns: 1fr; gap: 1.5rem; }
+            
+            .steps-grid, .pillars-grid, .symptom-grid { grid-template-columns: 1fr; gap: 1.5rem; margin-top: 2rem; }
+            .step-card { margin-top: 1.5rem; }
+            
+            .action-steps { flex-direction: column; gap: 3rem; margin-top: 2rem; }
+            .action-step::after { content: '\f063'; bottom: -2rem; top: auto; right: auto; left: 50%; transform: translateX(-50%); }
+            .action-circle { width: 90px; height: 90px; font-size: 2rem; }
+            
+            .nav-btn { width: 3.5rem; height: 3.5rem; font-size: 1.2rem; }
+            .nav-controls { bottom: 1.5rem; right: 1.5rem; gap: 1rem; }
+            .slide-counter { bottom: 1.5rem; left: 1.5rem; font-size: 1rem; padding: 0.4rem 0.8rem; }
+            
+            .swipe-hint { display: block; }
+            
+            .protocol-table th, .protocol-table td { padding: 0.8rem 1rem; font-size: 0.9rem; }
+            .mt-card { padding: 2rem 1.5rem; }
+            .mt-card h3 { font-size: 1.3rem; }
+            .final-message { font-size: 1.3rem; padding: 1.5rem; }
+            .slide-12 h1 { font-size: 2.2rem; }
+            .slide-12 p { font-size: 1.1rem; }
+
+            .clinical-image { max-height: 180px; }
+
+            /* Slide 13 no celular */
+            .slide-13 h1 { font-size: 2.5rem; margin-bottom: 2rem; }
+            .btn-container { flex-direction: column; gap: 2rem; height: auto; }
+            .btn-yes, .btn-no { padding: 1rem 2rem; font-size: 1.5rem; width: 100%; max-width: 300px; margin: 0 auto; position: relative; }
+            .btn-no { position: fixed; }
+            .thank-you-box h1 { font-size: 2.5rem; }
+            .thank-you-box p { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- INTRO -->
+    <div id="intro-overlay">
+        <h1 id="intro-1" class="intro-text">ESTÃO PREPARADOS???</h1>
+        <h1 id="intro-2" class="intro-text">APRESENTAÇÃO<br>SÍFILIS</h1>
+        <h1 id="intro-3" class="intro-text">Prof: Bentinho</h1>
+        <button id="skip-intro">Pular Introdução <i class="fa-solid fa-forward"></i></button>
+    </div>
+
+    <!-- BOTÃO DE TELA CHEIA -->
+    <button id="fullscreen-btn"><i class="fa-solid fa-expand"></i> Tela Cheia</button>
+
+    <!-- APRESENTAÇÃO -->
+    <div class="presentation" id="presentation-container">
+        
+        <!-- Slide 1 (EMILIE - 1 DE 2) -->
+        <section class="slide slide-1 active">
+            <div class="presenter-badge"><i class="fa-solid fa-microphone"></i> Emilie</div>
+            <i class="fa-solid fa-bacterium bacteria-icon anim anim-scale delay-1"></i>
+            <h1 class="anim anim-left delay-2">Sífilis: reconhecer,<br>testar e tratar</h1>
+            <p class="subtitle anim anim-right delay-3">Compreender a evolução, o diagnóstico e os cuidados essenciais em saúde</p>
+            <div class="authors anim anim-up delay-4">
+                <p>Seminário de Saúde · Ensino Médio</p>
+                <p style="color: var(--text-main); margin-top: 0.5rem; font-weight: 600;">Apresentado por Emilie, Diego, Marcos, Matheus, Gustavo e Ana Beatriz</p>
+                <p style="font-size: 0.9rem; margin-top: 1rem; opacity: 0.6;">Orientações fundamentadas nas diretrizes do Ministério da Saúde</p>
+            </div>
+        </section>
+
+        <!-- Slide 2 (EMILIE - 2 DE 2) -->
+        <section class="slide">
+            <div class="presenter-badge"><i class="fa-solid fa-microphone"></i> Emilie</div>
+            <h2 class="anim anim-left delay-1"><i class="fa-solid fa-triangle-exclamation"></i> Sífilis é uma infecção curável, mas não deve ser ignorada</h2>
+            <div class="grid-2">
+                <div>
+                    <p class="anim anim-left delay-2" style="margin-bottom: 1.5rem;">A sífilis é uma infecção bacteriana sexualmente transmissível causada pela bactéria <strong>Treponema pallidum</strong>. Quando identificada no momento adequado, possui tratamento definitivo e cura completa pela rede pública de saúde.</p>
+                    <p class="anim anim-left delay-3" style="margin-bottom: 1.5rem;">O maior desafio para o controle da doença reside no seu comportamento biológico: os primeiros sinais clínicos costumam cicatrizar espontaneamente em poucas semanas.</p>
+                    <p class="anim anim-left delay-4">Essa melhora aparente faz com que muitas pessoas acreditem que o problema foi superado, retardando a busca por ajuda especializada.</p>
+                    <div class="highlight-box anim anim-scale delay-5">
+                        <p><strong>Ponto fundamental:</strong> o desaparecimento das lesões visíveis não significa a cura da infecção; a bactéria continua ativa no organismo.</p>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="anim anim-right delay-2" style="color: var(--accent); margin-bottom: 1rem;">FATOS CLÍNICOS ESSENCIAIS</h3>
+                    <div class="fact-card anim anim-right delay-3">
+                        <i class="fa-solid fa-virus fact-icon"></i>
+                        <div class="fact-text"><h4>Agente causador</h4><p>Treponema pallidum</p></div>
+                    </div>
+                    <div class="fact-card anim anim-right delay-4">
+                        <i class="fa-solid fa-shield-virus fact-icon"></i>
+                        <div class="fact-text"><h4>Natureza</h4><p>Bactéria curável</p></div>
+                    </div>
+                    <div class="fact-card anim anim-right delay-5">
+                        <i class="fa-solid fa-circle-exclamation fact-icon"></i>
+                        <div class="fact-text"><h4>Sintoma inicial</h4><p>Cancro duro indolor</p></div>
+                    </div>
+                    <div class="fact-card anim anim-right delay-6">
+                        <i class="fa-solid fa-arrow-trend-down fact-icon"></i>
+                        <div class="fact-text"><h4>Sumiço do sinal</h4><p>Regressão espontânea</p></div>
+                    </div>
+                    <div class="fact-card anim anim-right delay-7">
+                        <i class="fa-solid fa-hospital fact-icon"></i>
+                        <div class="fact-text"><h4>Acesso ao cuidado</h4><p>Gratuito no SUS</p></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 3 (DIEGO - 1 DE 2) -->
+        <section class="slide">
+            <div class="presenter-badge"><i class="fa-solid fa-microphone"></i> Diego</div>
+            <h2 class="anim anim-left delay-1"><i class="fa-solid fa-people-arrows"></i> A transmissão acontece pelo contato com lesões e na gestação</h2>
+            <p class="anim anim-left delay-2" style="margin-bottom: 1rem;">A bactéria entra no organismo por meio de microlesões na pele ou mucosas durante o contato direto com secreções ativas.</p>
+            
+            <div class="transmission-grid">
+                <div class="trans-card anim anim-left delay-3">
+                    <i class="fa-solid fa-bed trans-icon"></i>
+                    <h3>VIA HORIZONTAL</h3>
+                    <h4 style="color: var(--accent); margin-bottom: 1rem;">Relações sexuais</h4>
+                    <p>Ocorre em práticas sexuais (oral, vaginal ou anal), principalmente quando não há o uso regular de preservativo e existe contato direto com feridas ou manchas em mucosas e genitais.</p>
+                    <p style="margin-top: 1rem; font-size: 1rem; color: var(--text-main);"><i class="fa-solid fa-shield"></i> A barreira física do preservativo reduz drasticamente a chance de contato com secreções ricas na bactéria.</p>
+                    <!-- Imagem real: cancro primário -->
+                    <div class="img-container anim anim-up delay-4" style="margin-top: 1.5rem;">
+                        <img src="https://wwwn.cdc.gov/phil/PHIL_Images/12575/12575_lores.jpg" alt="Cancro duro primário" class="clinical-image" onerror="this.style.display='none'">
+                        <p class="img-caption">Cancro duro (lesão primária) — Fonte: CDC/PHIL</p>
+                    </div>
+                </div>
+                <div class="trans-card anim anim-right delay-4">
+                    <i class="fa-solid fa-baby trans-icon"></i>
+                    <h3>VIA VERTICAL</h3>
+                    <h4 style="color: var(--primary-light); margin-bottom: 1rem;">Gestação e parto</h4>
+                    <p>A transmissão de mãe para filho pode acontecer através da placenta durante qualquer trimestre da gestação ou pelo contato no canal de parto caso haja lesões ativas.</p>
+                    <p style="margin-top: 1rem; font-size: 1rem; color: var(--text-main);"><i class="fa-solid fa-stethoscope"></i> A realização dos testes de rotina no pré-natal é a intervenção decisiva para bloquear completamente essa via.</p>
+                    <!-- Imagem real: gestante com lesões secundárias -->
+                    <div class="img-container anim anim-up delay-5" style="margin-top: 1.5rem;">
+                        <img src="https://wwwn.cdc.gov/phil/PHIL_Images/17830/17830_lores.jpg" alt="Gestante com lesões de sífilis secundária" class="clinical-image" onerror="this.style.display='none'">
+                        <p class="img-caption">Lesões em gestante — Fonte: CDC/PHIL</p>
+                    </div>
+                </div>
+            </div>
+            <div class="warning-box anim anim-scale delay-5">
+                <i class="fa-solid fa-circle-info" style="font-size: 1.5rem; color: var(--accent);"></i>
+                <p style="font-size: 1.1rem; color: var(--text-main);"><strong>Importante:</strong> a infecção não se transmite por aperto de mão, talheres, toalhas, assentos sanitários ou contato casual cotidiano.</p>
+            </div>
+        </section>
+
+        <!-- Slide 4 (DIEGO - 2 DE 2) -->
+        <section class="slide">
+            <div class="presenter-badge"><i class="fa-solid fa-microphone"></i> Diego</div>
+            <h2 class="anim anim-left delay-1"><i class="fa-solid fa-timeline"></i> A doença evolui por estágios que podem se alternar</h2>
+            
+            <div class="stage-diagram">
+                <div class="stage-box anim anim-left delay-2">
+                    <h3>Primária</h3>
+                    <p>Ferida geralmente única no local de entrada.</p>
+                </div>
+                <div class="stage-box anim anim-right delay-3">
+                    <h3>Latente</h3>
+                    <p>Sem sintomas aparentes.</p>
+                </div>
+            </div>
+            <div class="stage-connector anim anim-scale delay-3">
+                <i class="fa-solid fa-arrow-down"></i> <i class="fa-solid fa-arrow-down"></i>
+            </div>
+            <div class="stage-diagram">
+                <div class="stage-box anim anim-left delay-4">
+                    <h3>Secundária</h3>
+                    <p>Manchas no corpo, inclusive palmas das mãos e plantas dos pés.</p>
+                    <!-- Imagem real: manchas nas palmas -->
+                    <div class="img-container" style="margin-top: 1rem;">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Secondary_Syphilis_on_palms_CDC_6809_lores.rsh.jpg/640px-Secondary_Syphilis_on_palms_CDC_6809_lores.rsh.jpg" alt="Manchas nas palmas das mãos (sífilis secundária)" class="clinical-image" onerror="this.style.display='none'">
+                        <p class="img-caption">Manchas nas palmas — Fonte: CDC/Wikimedia</p>
+                    </div>
+                </div>
+                <div class="stage-box anim anim-right delay-5">
+                    <h3>Terciária</h3>
+                    <p>Pode causar complicações graves em diferentes órgãos.</p>
+                    <!-- Imagem real: goma terciária -->
+                    <div class="img-container" style="margin-top: 1rem;">
+                        <img src="https://wwwn.cdc.gov/phil/PHIL_Images/16465/16465_lores.jpg" alt="Goma terciária" class="clinical-image" onerror="this.style.display='none'">
+                        <p class="img-caption">Goma terciária — Fonte: CDC/PHIL</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 5 (MARCOS - 1 DE 2) -->
+        <section class="slide">
+            <div class="presenter-badge"><i class="fa-solid fa-microphone"></i> Marcos</div>
+            <h2 class="anim anim-left delay-1"><i class="fa-solid fa-eye-slash"></i> O sintoma pode sumir antes que a infecção desapareça</h2>
+            <div class="symptom-grid">
+                <div class="symptom-card anim anim-left delay-2">
+                    <i class="fa-solid fa-circle-dot symptom-icon"></i>
+                    <h3>FASE PRIMÁRIA</h3>
+                    <h4 style="color: var(--text-main); margin-bottom: 0.5rem;">Cancro duro</h4>
+                    <p>Costuma não doer, coçar ou arder.</p>
+                </div>
+                <div class="symptom-card anim anim-scale delay-3">
+                    <i class="fa-solid fa-hand-dots symptom-icon"></i>
+                    <h3>FASE SECUNDÁRIA</h3>
+                    <h4 style="color: var(--text-main); margin-bottom: 0.5rem;">Sinais possíveis</h4>
+                    <p>Podem surgir manchas, febre, mal-estar e ínguas.</p>
+                </div>
+                <div class="symptom-card anim anim-right delay-4">
+                    <i class="fa-solid fa-ghost symptom-icon"></i>
+                    <h3>SEM SINTOMAS</h3>
+                    <h4 style="color: var(--text-main); margin-bottom: 0.5rem;">A infecção ainda pode estar presente</h4>
+                    <p>Ausência de sintomas não exclui a infecção.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 6 (MARCOS - 2 DE 2) -->
+        <section class="slide">
+            <div class="presenter-badge"><i class="fa-solid fa-microphone"></i> Marcos</div>
+            <h2 class="anim anim-left delay-1"><i class="fa-solid fa-microscope"></i> O diagnóstico combina avaliação e testes</h2>
+            <p class="anim anim-left delay-2">A confirmação rápida é a chave para interromper a cadeia de transmissão e orientar a conduta clínica.</p>
+            <div class="steps-grid">
+                <div class="step-card anim anim-left delay-3">
+                    <div class="step-number">1</div>
+                    <h3>1. Suspeita</h3>
+                    <p>Identificação de feridas genitais, manchas corporais ou histórico de relação sexual desprotegida.</p>
+                    <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--accent);">Busca espontânea ou triagem rotineira na UBS.</p>
+                </div>
+                <div class="step-card anim anim-scale delay-4">
+                    <div class="step-number">2</div>
+                    <h3>2. Teste rápido</h3>
+                    <p>Coleta de uma gota de sangue com resultado em aproximadamente trinta minutos na unidade de saúde.</p>
+                    <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--accent);">Triagem sensível e imediata disponível no SUS.</p>
+                </div>
+                <div class="step-card anim anim-scale delay-5">
+                    <div class="step-number">3</div>
+                    <h3>3. Avaliação</h3>
+                    <p>Exame físico detalhado e teste laboratorial complementar (VDRL) para confirmar títulos e estágio da doença.</p>
+                    <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--accent);">Define o esquema terapêutico correto.</p>
+                </div>
+                <div class="step-card anim anim-right delay-6">
+                    <div class="step-number">4</div>
+                    <h3>4. Monitoramento</h3>
+                    <p>Seguimento laboratorial periódico após o tratamento para confirmar a queda dos títulos e assegurar a cura.</p>
+                    <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--accent);">Acompanhamento clínico até a alta.</p>
+                </div>
+            </div>
+            <div class="action-alert anim anim-scale delay-7">
+                <i class="fa-solid fa-bullhorn"></i> Ação recomendada: diante de qualquer lesão ou dúvida, procure a Unidade Básica de Saúde; o teste é confidencial, seguro e gratuito.
+            </div>
+        </section>
+
+        <!-- Slide 7 (MATHEUS - 1 DE 2) -->
+        <section class="slide">
+            <div class="presenter-badge"><i class="fa-solid fa-microphone"></i> Matheus</div>
+            <h2 class="anim anim-left delay-1"><i class="fa-solid fa-pills"></i> O tratamento existe e precisa ser acompanhado</h2>
+            <p class="anim anim-left delay-2">A sífilis tem cura estabelecida por meio de medicamentos antibióticos padronizados, amplamente fornecidos pelo Sistema Único de Saúde.</p>
+            <p class="anim anim-left delay-3" style="margin-top: 1rem;">O número de aplicações e a dosagem são definidos estritamente pelo médico ou profissional de enfermagem, variando de acordo com o tempo decorrido desde o contágio e a fase clínica observada. Para que a infecção seja de fato superada e não ocorra reinfecção, o protocolo deve ser cumprido integralmente até a data combinada, sem interrupções por melhora precoce.</p>
+            <h3 class="anim anim-left delay-4" style="margin-top: 2rem; color: var(--accent);">TRÊS PILARES DO CUIDADO</h3>
+            <div class="pillars-grid">
+                <div class="pillar-card anim anim-left delay-5">
+                    <h3>1. Esquema completo</h3>
+                    <p>Cumprir rigorosamente todas as doses receitadas pelo serviço de saúde.</p>
+                </div>
+                <div class="pillar-card anim anim-scale delay-6">
+                    <h3>2. Parcerias sexuais</h3>
+                    <p>Notificar e convidar as parcerias para testagem e tratamento simultâneo, evitando reinfecções em círculo.</p>
+                </div>
+                <div class="pillar-card anim anim-right delay-7">
+                    <h3>3. Controle de cura</h3>
+                    <p>Realizar novos exames de sangue no cronograma estipulado pela equipe de saúde.</p>
+                </div>
+            </div>
+            <div class="danger-alert anim anim-scale delay-8">
+                <i class="fa-solid fa-triangle-exclamation" style="font-size: 2rem; color: var(--primary);"></i>
+                <p><strong>Alerta de saúde:</strong> nunca recorra à automedicação; remédios tomados por conta própria podem mascarar exames sem eliminar a bactéria.</p>
+            </div>
+        </section>
+
+        <!-- Slide 8 (MATHEUS - 2 DE 2) -->
+        <section class="slide">
+            <div class="presenter-badge"><i class="fa-solid fa-microphone"></i> Matheus</div>
+            <h2 class="anim anim-left delay-1"><i class="fa-solid fa-baby-carriage"></i> Na gestação, o pré-natal protege duas vidas</h2>
+            <div class="pregnancy-layout">
+                <div>
+                    <p class="anim anim-left delay-2" style="margin-bottom: 1rem;">A transmissão vertical da sífilis ocorre quando a bactéria passa da gestante para o feto durante o desenvolvimento intrauterino ou no momento do parto.</p>
+                    <p class="anim anim-left delay-3" style="margin-bottom: 1rem;">A infecção não tratada pode gerar desfechos obstétricos severos, tais como abortamento espontâneo, nascimento prematuro, natimorto e manifestações de sífilis congênita (lesões cutâneas, ósseas, malformações e comprometimento neurológico no bebê).</p>
+                    <p class="anim anim-left delay-4" style="margin-bottom: 1rem;">O acompanhamento pré-natal precoce com testagem sistemática transforma esse cenário: o tratamento oportuno da mãe impede a passagem da bactéria e assegura a saúde do recém-nascido.</p>
+                    <div class="official-guideline anim anim-left delay-5">
+                        <p style="font-size: 1.1rem; color: var(--text-main);"><strong>Diretriz oficial:</strong> o diagnóstico precoce na gestação é 100% eficaz para prevenir as sequelas da sífilis congênita.</p>
+                    </div>
+                </div>
+                <div class="anim anim-right delay-3">
+                    <h3 style="margin-bottom: 1rem; color: var(--accent);">PROTOCOLO DE TESTAGEM NA GESTAÇÃO</h3>
+                    <table class="protocol-table">
+                        <thead>
+                            <tr><th>Momento</th><th>Período</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>1º Trimestre</td><td>Primeira consulta</td></tr>
+                            <tr><td>3º Trimestre</td><td>Por volta de 28 semanas</td></tr>
+                            <tr><td>Parto</td><td>Na admissão obstétrica</td></tr>
+                            <tr><td>Internação</td><td>Na admissão obstétrica</td></tr>
+                            <tr><td>Em caso de aborto</td><td>Investigação imediata</td></tr>
+                        </tbody>
+                    </table>
+                    <p style="font-size: 0.9rem; margin-top: 1rem; text-align: right; opacity: 0.7;">Recomendação do Ministério da Saúde do Brasil.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 9 (GUSTAVO - 1 DE 2) -->
+        <section class="slide">
+            <div class="presenter-badge"><i class="fa-solid fa-microphone"></i> Gustavo</div>
+            <h2 class="anim anim-left delay-1"><i class="fa-solid fa-shield-heart"></i> Prevenir é testar, tratar e conversar</h2>
+            <p class="anim anim-left delay-2">A proteção coletiva nasce do diálogo sem tabus, do autocuidado e do acesso garantido à saúde pública.</p>
+            <div class="prevention-grid">
+                <div class="prevention-item anim anim-left delay-3">
+                    <i class="fa-solid fa-shield-virus prev-icon"></i>
+                    <div><h3>Preservativo</h3><p>O uso consistente da camisinha masculina ou feminina protege contra o contato com lesões infecciosas.</p></div>
+                </div>
+                <div class="prevention-item anim anim-right delay-4">
+                    <i class="fa-solid fa-calendar-days prev-icon"></i>
+                    <div><h3>Testagem periódica</h3><p>Realizar exames de rotina ou após situações de exposição rompe o ciclo silencioso da transmissão.</p></div>
+                </div>
+                <div class="prevention-item anim anim-left delay-5">
+                    <i class="fa-solid fa-eye prev-icon"></i>
+                    <div><h3>Atenção aos sinais</h3><p>Não desconsiderar feridas genitais ou manchas pelo corpo, mesmo que não causem dor ou sumam sozinhas.</p></div>
+                </div>
+                <div class="prevention-item anim anim-right delay-6">
+                    <i class="fa-solid fa-comments prev-icon"></i>
+                    <div><h3>Diálogo e parceria</h3><p>Avisar parceiros para que possam realizar testes e receber tratamento conjunto na rede pública.</p></div>
+                </div>
+            </div>
+            <div class="conclusion-text anim anim-scale delay-7">
+                <i class="fa-solid fa-heart-pulse"></i> Conclusão: a sífilis é curável e evitável. Informação clara, prevenção combinada e cuidado solidário salvam vidas.
+            </div>
+        </section>
+
+        <!-- Slide 10 (GUSTAVO - 2 DE 2) -->
+        <section class="slide">
+            <div class="presenter-badge"><i class="fa-solid fa-microphone"></i> Gustavo</div>
+            <h2 class="anim anim-left delay-1"><i class="fa-solid fa-circle-question"></i> Mitos e verdades: informação também previne</h2>
+            <div class="myth-truth-grid">
+                <div class="mt-card myth anim anim-left delay-2">
+                    <div class="mt-badge">MITO</div>
+                    <h3>“Se a ferida sumiu, estou curado.”</h3>
+                    <p>O desaparecimento dos sinais não elimina a bactéria. A confirmação depende de avaliação e testes.</p>
+                </div>
+                <div class="mt-card truth anim anim-right delay-3">
+                    <div class="mt-badge">VERDADE</div>
+                    <h3>“Testar e tratar protege outras pessoas.”</h3>
+                    <p>O cuidado interrompe a transmissão, reduz reinfecções e protege a gestação.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 11 (ANA BEATRIZ - 1 DE 2) -->
+        <section class="slide">
+            <div class="presenter-badge"><i class="fa-solid fa-microphone"></i> Ana Beatriz</div>
+            <h2 class="anim anim-left delay-1"><i class="fa-solid fa-person-walking-arrow-right"></i> O que fazer diante de uma dúvida</h2>
+            <p class="anim anim-left delay-2" style="font-size: 1.5rem; color: var(--text-main); margin-top: 1rem;">Não espere os sintomas aparecerem ou persistirem para buscar cuidado.</p>
+            <div class="action-steps">
+                <div class="action-step anim anim-scale delay-3">
+                    <div class="action-circle"><i class="fa-solid fa-hospital-user"></i></div>
+                    <h3>1 · Procurar</h3>
+                    <p>Vá a uma Unidade Básica de Saúde ou serviço de referência.</p>
+                </div>
+                <div class="action-step anim anim-scale delay-4">
+                    <div class="action-circle"><i class="fa-solid fa-vial-virus"></i></div>
+                    <h3>2 · Testar</h3>
+                    <p>Faça o teste com sigilo, acolhimento e orientação profissional.</p>
+                </div>
+                <div class="action-step anim anim-scale delay-5">
+                    <div class="action-circle"><i class="fa-solid fa-hand-holding-medical"></i></div>
+                    <h3>3 · Cuidar</h3>
+                    <p>Siga o tratamento e convide as parcerias para também se testarem.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 12 (ANA BEATRIZ - 2 DE 2) -->
+        <section class="slide slide-12">
+            <div class="presenter-badge"><i class="fa-solid fa-microphone"></i> Ana Beatriz</div>
+            <h1 class="anim anim-scale delay-1" style="background: linear-gradient(to right, #38bdf8, #10b981); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Conclusão: informação, testagem e tratamento salvam vidas</h1>
+            <p class="anim anim-left delay-2">A sífilis é curável e pode ser evitada. Reconhecer os sinais, testar na rede pública, completar o tratamento e conversar com respeito transforma prevenção em cuidado coletivo.</p>
+            <div class="final-message anim anim-scale delay-3">
+                <i class="fa-solid fa-bullhorn"></i> Mensagem final: se houver dúvida, procure uma unidade de saúde.<br>
+                <span style="font-size: 1.2rem; font-weight: 400; color: var(--text-muted); display: block; margin-top: 1rem;">Não normalize o silêncio — compartilhe informação confiável.</span>
+            </div>
+        </section>
+
+        <!-- Slide 13 (A BRINCADEIRA DO 10) -->
+        <section class="slide slide-13">
+            <div class="presenter-badge"><i class="fa-solid fa-microphone"></i> Todos</div>
+            
+            <div id="question-container">
+                <h1 class="anim anim-scale delay-1">Merecemos 10?</h1>
+                <div class="btn-container anim anim-up delay-2">
+                    <button id="btn-sim" class="btn-yes"><i class="fa-solid fa-check"></i> SIM!</button>
+                    <button id="btn-nao" class="btn-no"><i class="fa-solid fa-xmark"></i> NÃO</button>
+                </div>
+            </div>
+
+            <div id="thank-you-container" class="thank-you-box">
+                <h1 class="anim anim-scale">Valeu Pelo 10 Bentinho! kkkkkk 🎉</h1>
+                <p class="anim anim-up delay-1">O 10 é nosso! E a sífilis é curável. 😂</p>
+                <p class="anim anim-up delay-2" style="font-size: 1.2rem; margin-top: 2rem; color: var(--accent);">Apresentado por Emilie, Diego, Marcos, Matheus, Gustavo e Ana Beatriz.</p>
+            </div>
+        </section>
+
+        <!-- UI Navegação -->
+        <div class="slide-counter"><span id="current-slide">1</span> / 13</div>
+        
+        <div class="swipe-hint" id="swipe-hint">
+            <i class="fa-solid fa-hand-pointer"></i> Deslize para os lados
+        </div>
+
+        <div class="nav-controls">
+            <button class="nav-btn disabled" id="prev-btn"><i class="fa-solid fa-chevron-left"></i></button>
+            <button class="nav-btn" id="next-btn"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+        <div class="progress-bar" id="progress-bar" style="width: 7.69%;"></div>
+
+    </div>
+
+    <script>
+        // --- CONTROLE DA INTRODUÇÃO ---
+        const introOverlay = document.getElementById('intro-overlay');
+        const introTexts = [document.getElementById('intro-1'), document.getElementById('intro-2'), document.getElementById('intro-3')];
+        const presentationContainer = document.getElementById('presentation-container');
+        const skipBtn = document.getElementById('skip-intro');
+        const fullscreenBtn = document.getElementById('fullscreen-btn');
+        
+        let introTimeouts = [];
+        let introFinished = false;
+
+        // Função para Tela Cheia
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Erro ao tentar tela cheia: ${err.message}`);
+                });
+                fullscreenBtn.innerHTML = '<i class="fa-solid fa-compress"></i> Sair da Tela Cheia';
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                    fullscreenBtn.innerHTML = '<i class="fa-solid fa-expand"></i> Tela Cheia';
+                }
+            }
+        }
+
+        fullscreenBtn.addEventListener('click', toggleFullscreen);
+        
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement) {
+                fullscreenBtn.innerHTML = '<i class="fa-solid fa-expand"></i> Tela Cheia';
+            }
+        });
+
+        function startPresentation() {
+            if (introFinished) return;
+            introFinished = true;
+            
+            introTimeouts.forEach(clearTimeout);
+            introOverlay.style.opacity = '0';
+            
+            setTimeout(() => {
+                introOverlay.style.display = 'none';
+                presentationContainer.style.opacity = '1';
+                presentationContainer.style.pointerEvents = 'all';
+                
+                const firstSlide = document.querySelector('.slide.active');
+                if(firstSlide) {
+                    const anims = firstSlide.querySelectorAll('.anim');
+                    anims.forEach(anim => {
+                        anim.style.animation = 'none';
+                        anim.offsetHeight; 
+                        anim.style.animation = null; 
+                    });
+                }
+            }, 800);
+        }
+
+        function playIntro() {
+            introTimeouts.push(setTimeout(() => { introTexts[0].classList.add('active'); }, 500));
+            introTimeouts.push(setTimeout(() => { introTexts[0].classList.remove('active'); }, 3000));
+            
+            introTimeouts.push(setTimeout(() => { introTexts[1].classList.add('active'); }, 3500));
+            introTimeouts.push(setTimeout(() => { introTexts[1].classList.remove('active'); }, 6000));
+            
+            introTimeouts.push(setTimeout(() => { introTexts[2].classList.add('active'); }, 6500));
+            introTimeouts.push(setTimeout(() => { introTexts[2].classList.remove('active'); }, 8500));
+            
+            introTimeouts.push(setTimeout(startPresentation, 9000));
+        }
+
+        window.onload = playIntro;
+        skipBtn.addEventListener('click', startPresentation);
+
+        // --- CONTROLE DOS SLIDES ---
+        const slides = document.querySelectorAll('.slide');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const currentSlideSpan = document.getElementById('current-slide');
+        const progressBar = document.getElementById('progress-bar');
+        const swipeHint = document.getElementById('swipe-hint');
+        
+        let currentSlideIndex = 0;
+        const totalSlides = slides.length;
+
+        function updateSlide() {
+            slides.forEach(slide => slide.classList.remove('active'));
+            const activeSlide = slides[currentSlideIndex];
+            activeSlide.classList.add('active');
+
+            currentSlideSpan.textContent = currentSlideIndex + 1;
+            progressBar.style.width = `${((currentSlideIndex + 1) / totalSlides) * 100}%`;
+
+            if (currentSlideIndex === 0) {
+                prevBtn.classList.add('disabled');
+            } else {
+                prevBtn.classList.remove('disabled');
+            }
+
+            if (currentSlideIndex === totalSlides - 1) {
+                nextBtn.classList.add('disabled');
+            } else {
+                nextBtn.classList.remove('disabled');
+            }
+            
+            if(swipeHint) swipeHint.style.opacity = '0';
+        }
+
+        function nextSlide() {
+            if (!introFinished) return;
+            if (currentSlideIndex < totalSlides - 1) {
+                currentSlideIndex++;
+                updateSlide();
+            }
+        }
+
+        function prevSlide() {
+            if (!introFinished) return;
+            if (currentSlideIndex > 0) {
+                currentSlideIndex--;
+                updateSlide();
+            }
+        }
+
+        nextBtn.addEventListener('click', nextSlide);
+        prevBtn.addEventListener('click', prevSlide);
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
+                if(currentSlideIndex === 12) return;
+                e.preventDefault();
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                prevSlide();
+            } else if (e.key === 'f' || e.key === 'F') {
+                toggleFullscreen();
+            }
+        });
+
+        // --- SUPORTE A SWIPE ---
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchEndX = 0;
+        let touchEndY = 0;
+        const swipeThreshold = 50; 
+
+        presentationContainer.addEventListener('touchstart', function(event) {
+            touchStartX = event.changedTouches[0].screenX;
+            touchStartY = event.changedTouches[0].screenY;
+        }, { passive: true });
+
+        presentationContainer.addEventListener('touchend', function(event) {
+            touchEndX = event.changedTouches[0].screenX;
+            touchEndY = event.changedTouches[0].screenY;
+            handleSwipe();
+        }, { passive: true });
+
+        function handleSwipe() {
+            if (!introFinished) return;
+
+            const xDiff = touchStartX - touchEndX;
+            const yDiff = touchStartY - touchEndY;
+
+            if (Math.abs(xDiff) > Math.abs(yDiff) && Math.abs(xDiff) > swipeThreshold) {
+                if (xDiff > 0) {
+                    nextSlide();
+                } else {
+                    prevSlide();
+                }
+            }
+        }
+
+        // --- ESCONDER CURSOR (IMERSÃO) ---
+        let cursorTimeout;
+        document.addEventListener('mousemove', () => {
+            document.body.classList.remove('hide-cursor');
+            clearTimeout(cursorTimeout);
+            cursorTimeout = setTimeout(() => {
+                if(introFinished) {
+                    document.body.classList.add('hide-cursor');
+                }
+            }, 2000); 
+        });
+
+
+        // --- LÓGICA DO BOTÃO FOGE (SLIDE 13) ---
+        const btnNao = document.getElementById('btn-nao');
+        const btnSim = document.getElementById('btn-sim');
+        const questionContainer = document.getElementById('question-container');
+        const thankYouContainer = document.getElementById('thank-you-container');
+
+        function moveNoButton() {
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            const btnWidth = btnNao.offsetWidth;
+            const btnHeight = btnNao.offsetHeight;
+
+            const randomX = Math.random() * (windowWidth - btnWidth);
+            const randomY = Math.random() * (windowHeight - btnHeight);
+
+            btnNao.style.left = `${randomX}px`;
+            btnNao.style.top = `${randomY}px`;
+        }
+
+        btnNao.addEventListener('mouseover', moveNoButton);
+        
+        btnNao.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            moveNoButton();
+        });
+
+        btnNao.addEventListener('click', moveNoButton);
+
+        btnSim.addEventListener('click', () => {
+            questionContainer.style.display = 'none';
+            thankYouContainer.style.display = 'block';
+            
+            document.querySelector('.nav-controls').style.display = 'none';
+            document.querySelector('.slide-counter').style.display = 'none';
+            document.querySelector('.presenter-badge').style.display = 'none';
+            
+            console.log("Valeu Pelo 10 Bentinho! kkkkkk");
+        });
+    </script>
+</body>
+</html>
